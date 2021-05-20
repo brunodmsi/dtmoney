@@ -16,12 +16,14 @@ createServer({
           title: 'Desenvolvimento de website',
           amount: 12000,
           category: 'Desenvolvimento',
+          type: 'deposit',
           createdAt: new Date('2021-02-12 09:00:00')
         },
         {
           id: 2,
           title: 'Aluguel',
           amount: 1100,
+          type: 'withdraw',
           category: 'Casa',
           createdAt: new Date('2021-02-17 09:00:00')
         }
