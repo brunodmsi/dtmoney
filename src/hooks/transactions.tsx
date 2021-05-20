@@ -1,4 +1,4 @@
-import React, { createContext, FC, useEffect, useState, ReactNode, useCallback, useContext } from 'react';
+import { createContext, useEffect, useState, ReactNode, useCallback, useContext } from 'react';
 import { api } from '../services/api';
 
 interface Transaction {
@@ -31,9 +31,15 @@ export function TransactionProvider({ children }: TransactionProviderProps) {
       .then(response => setTransactions(response.data.transactions));
   }, []);
 
-  const createTransaction = useCallback(async (transaction: TransactionInput) => {
-    await api.post('/transactions', transaction);
-  }, []);
+  const createTransaction = useCallback(async (transactionInput: TransactionInput) => {
+    const response = await api.post('/transactions', {
+      ...transactionInput,
+      createdAt: new Date()
+    });
+    const { transaction } = response.data;
+
+    setTransactions([...transactions, transaction]);
+  }, [transactions]);
 
   return (
     <TransactionContext.Provider 
