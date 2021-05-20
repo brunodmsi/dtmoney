@@ -1,4 +1,4 @@
-import React, { createContext, FC, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, FC, useEffect, useState, ReactNode, useCallback, useContext } from 'react';
 import { api } from '../services/api';
 
 interface Transaction {
@@ -10,11 +10,18 @@ interface Transaction {
   createdAt: string;
 }
 
+type TransactionInput = Omit<Transaction, 'id' | 'createdAt'> 
+
 interface TransactionProviderProps {
   children: ReactNode
 }
 
-export const TransactionContext = createContext<Transaction[]>([]);
+interface TransactionContextData {
+  transactions: Transaction[];
+  createTransaction: (transaction: TransactionInput) => Promise<void>;
+}
+
+export const TransactionContext = createContext<TransactionContextData>({} as TransactionContextData);
 
 export function TransactionProvider({ children }: TransactionProviderProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -24,9 +31,25 @@ export function TransactionProvider({ children }: TransactionProviderProps) {
       .then(response => setTransactions(response.data.transactions));
   }, []);
 
+  const createTransaction = useCallback(async (transaction: TransactionInput) => {
+    await api.post('/transactions', transaction);
+  }, []);
+
   return (
-    <TransactionContext.Provider value={transactions}>
+    <TransactionContext.Provider 
+      value={{ transactions, createTransaction }}
+    >
       {children}
     </TransactionContext.Provider>
   )
+}
+
+export function useTransaction(): TransactionContextData {
+  const context = useContext(TransactionContext);
+
+  if (!context) {
+    throw new Error('userAuth must be used within an AuthProvider');
+  }
+
+  return context;
 }
